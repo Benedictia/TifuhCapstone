@@ -1,6 +1,10 @@
 Book App Frontend
+
+
 This is the frontend for the Absizy Book App. It allows users to search for books using keywords and genre, view their details, and manage their personal library. The app connects to the backend API to retrieve book data, handle user authentication, and update the library.
 
+
+link to the Absizy Book App: https://tifuhcapstone.onrender.com/
 Users have access to free books as well as books on purchase alongside the links. 
 
 
