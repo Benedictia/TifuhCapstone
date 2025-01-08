@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect } from 'react';
-import { getBooks, getGenres } from '../services/apiService'; 
-import BookCard from '../components/BookCard'; 
+import { getBooks, getGenres } from '../services/apiService';
+import BookCard from '../components/BookCard';
 import { useNavigate } from 'react-router-dom';
 
 const BookSearchPage = () => {
@@ -20,7 +19,7 @@ const BookSearchPage = () => {
   // Handle genre change
   const handleGenreChange = (e) => {
     setSelectedGenre(e.target.value);
-    setQueryParams(''); 
+    setQueryParams('');
   };
 
   // Handle search text input
@@ -32,7 +31,7 @@ const BookSearchPage = () => {
   const handleAddToLibrary = async (book) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/login'); 
+      navigate('/login');
       return;
     }
 
@@ -40,7 +39,7 @@ const BookSearchPage = () => {
       bookId: book.id,
       title: book.volumeInfo?.title,
       author: book.volumeInfo?.authors?.join(', ') || 'Unknown',
-      status: 'Reading', 
+      status: 'Reading',
     };
 
     try {
@@ -54,7 +53,7 @@ const BookSearchPage = () => {
       });
 
       if (response.ok) {
-        const updatedLibrary = await response.json(); 
+        const updatedLibrary = await response.json();
         alert(`${book.volumeInfo.title} has been added to your library!`);
       } else {
         alert('Failed to add book to your library');
@@ -95,11 +94,18 @@ const BookSearchPage = () => {
     fetchBooks();
   }, [queryParams, selectedGenre, currentPage]);
 
+  // Determine the range of books shown on the current page
+  const getCurrentPageRange = () => {
+    const startIndex = (currentPage - 1) * maxResults + 1;
+    const endIndex = Math.min(currentPage * maxResults, totalResults);
+    return `${startIndex} - ${endIndex}`;
+  };
+
   return (
     <div>
       <h1>Search Books</h1>
 
-      <div>
+      <div className="center-container">
         <input
           type="text"
           placeholder="Search by title or author"
@@ -129,20 +135,27 @@ const BookSearchPage = () => {
         )}
       </div>
 
-      <div className="pagination">
-        <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-        <button
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage * maxResults >= totalResults}
-        >
-          Next
-        </button>
-      </div>
+      {totalResults > 0 && (
+        <div className="pagination">
+          <div>
+            <p>
+              Showing {getCurrentPageRange()} of {totalResults} books
+            </p>
+          </div>
+          <button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage * maxResults >= totalResults}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

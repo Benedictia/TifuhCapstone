@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = ({ onAuthenticate }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   // Check if the user is already logged in 
   useEffect(() => {
@@ -18,7 +22,7 @@ const LoginPage = ({ onAuthenticate }) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/login', {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/login', {  
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,33 +51,101 @@ const LoginPage = ({ onAuthenticate }) => {
     }
   };
 
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+
+      if (response.ok) {
+        alert('If the email is registered, a password reset link has been sent.');
+        setShowModal(false);  
+      } else {
+        const errorData = await response.json();
+        alert(errorData.msg || 'An error occurred. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      alert('An error occurred. Please try again later.');
+    }
+  };
+
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+    <div className="login-container" style={{ padding: '3rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="login-form" style={{ width: '100%', maxWidth: '400px' }}>
+        <h2>Login</h2>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="email">Email address</label>
+            <input 
+              type="email" 
+              id="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
+            />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="password">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
+            />
+          </div>
+          <div className="remember-forgot" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <label>
+              <input type="checkbox" /> Remember me
+            </label>
+            <button type="button" onClick={() => setShowModal(true)} style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer' }}>Forgot password?</button>
+          </div>
+          <button type="submit" style={{ width: '100%', padding: '0.75rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>Login</button>
+        </form>
+      </div>
+
+      {/* Modal for Password Reset */}
+      {showModal && (
+        <div className="modal" style={{
+          position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
+        }}>
+          <div className="modal-content" style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '5px', width: '100%', maxWidth: '400px' }}>
+            <h3>Reset Password</h3>
+            <form onSubmit={handleResetPassword}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label htmlFor="resetEmail">Enter your email</label>
+                <input 
+                  type="email" 
+                  id="resetEmail" 
+                  value={resetEmail} 
+                  onChange={(e) => setResetEmail(e.target.value)} 
+                  required 
+                  style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }} 
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button type="submit" style={{ padding: '0.75rem', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px' }}>
+                  Send Reset Link
+                </button>
+                <button type="button" onClick={() => setShowModal(false)} style={{
+                  padding: '0.75rem', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px'
+                }}>Close</button>
+              </div>
+            </form>
+          </div>
         </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
+      )}
     </div>
   );
 };
 
 export default LoginPage;
-

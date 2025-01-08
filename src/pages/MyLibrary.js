@@ -1,18 +1,21 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const MyLibrary = () => {
   const navigate = useNavigate();
-  const [userLibrary, setUserLibrary] = useState([]); 
+  const [userLibrary, setUserLibrary] = useState([]);
   const [newBook, setNewBook] = useState({
     title: '',
     author: '',
     genre: '',
     description: '',
     link: '',
+    status: 'yetToStart', // Default status for new book
   });
   const [editingBook, setEditingBook] = useState(null);
-
+  const [error, setError] = useState(null); 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -25,35 +28,57 @@ const MyLibrary = () => {
         'Authorization': `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
-      .then((data) => setUserLibrary(data.library || [])) // Ensure default empty array
-      .catch((error) => console.error('Error fetching library:', error));
+      .then((response) => {
+        if (!response.ok) throw new Error('Failed to fetch library');
+        return response.json();
+      })
+      .then((data) => setUserLibrary(data.library || [])) 
+      .catch((error) => setError(error.message)); 
   }, [navigate]);
 
   // Add book to library
-  const handleAddBook = (e) => {
+  const addBook = async (e) => {
     e.preventDefault(); 
+
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
     }
 
-    const newBookWithId = { ...newBook, bookId: Date.now(), status: 'yetToStart' };
-    fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(newBookWithId),
-    })
-      .then((response) => response.json())
-      .then((updatedLibrary) => {
-        setUserLibrary(updatedLibrary);
-        setNewBook({ title: '', author: '', genre: '', description: '', link: '' }); // Clear form after submission
-      })
-      .catch((error) => console.error('Error adding book:', error));
+    const book = {
+      ...newBook,
+      bookId: Date.now(), 
+      status: 'yetToStart', 
+    };
+
+    try {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(book),
+      });
+
+      if (!response.ok) throw new Error('Failed to add book');
+
+      const data = await response.json();
+      console.log('Library Updated:', data);
+      setUserLibrary(data); 
+      setNewBook({
+        title: '',
+        author: '',
+        genre: '',
+        description: '',
+        link: '',
+        status: 'yetToStart', 
+      }); // Reset form
+    } catch (error) {
+      console.error('Error adding book:', error);
+      setError(error.message); 
+    }
   };
 
   // Update book status
@@ -78,37 +103,42 @@ const MyLibrary = () => {
         const updatedLibrary = await response.json();
         setUserLibrary(updatedLibrary);
       } else {
-        console.error('Failed to update library');
+        throw new Error('Failed to update book status');
       }
     } catch (error) {
       console.error('Error updating book status:', error);
+      setError(error.message); 
     }
   };
 
   // Handle book deletion
-  const handleDeleteBook = (bookId) => {
+  const deleteBook = async (bookId) => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
     }
 
-    fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ bookId }),
-    })
-      .then((response) => response.json())
-      .then((updatedLibrary) => {
-        setUserLibrary(updatedLibrary);
-      })
-      .catch((error) => console.error('Error deleting book:', error));
+    try {
+      const response = await fetch(`https://backendbookapp-8eur.onrender.com/api/auth/library/${bookId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to delete book');
+
+      const data = await response.json();
+      console.log('Library after deletion:', data);
+      setUserLibrary(data); 
+    } catch (error) {
+      console.error('Error deleting book:', error);
+      setError(error.message); 
+    }
   };
 
-  
   const handleEditBook = (book) => {
     setEditingBook(book);
     setNewBook({
@@ -117,50 +147,102 @@ const MyLibrary = () => {
       genre: book.genre,
       description: book.description,
       link: book.link,
+      status: book.status || 'yetToStart',  
     });
+  };
+
+  // Update book
+  const handleUpdateBook = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const updatedBook = {
+      ...newBook,
+      bookId: editingBook.bookId, 
+      status: editingBook.status || 'yetToStart', 
+    };
+
+    try {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedBook),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text(); 
+        console.error('Failed to update book. Server response:', errorMessage);
+        throw new Error(`Failed to update book: ${response.statusText}`);
+      }
+
+      const updatedLibrary = await response.json();
+      console.log('Library Updated:', updatedLibrary);
+
+      // Update the UI with the updated library data
+      setUserLibrary(updatedLibrary);
+      setNewBook({
+        title: '',
+        author: '',
+        genre: '',
+        description: '',
+        link: '',
+        status: 'yetToStart', 
+      });
+      setEditingBook(null);
+    } catch (error) {
+      console.error('Error updating book:', error);
+      setError(error.message); 
+    }
   };
 
   return (
     <div>
       <h2>My Book Collection</h2>
+      {error && <div className="error">{error}</div>} 
       <div>
         <h3>{editingBook ? 'Edit Book' : 'Add New Book'}</h3>
-        
-        
-        <form onSubmit={handleAddBook}>
+        <form onSubmit={editingBook ? handleUpdateBook : addBook}>
           <input
             type="text"
             placeholder="Title"
-            value={newBook.title}
+            value={newBook.title || ''}
             onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
             required
           />
           <input
             type="text"
             placeholder="Author"
-            value={newBook.author}
+            value={newBook.author || ''}
             onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
             required
           />
           <input
             type="text"
             placeholder="Genre"
-            value={newBook.genre}
+            value={newBook.genre || ''}
             onChange={(e) => setNewBook({ ...newBook, genre: e.target.value })}
             required
           />
           <textarea
             placeholder="Description"
-            value={newBook.description}
+            value={newBook.description || ''}
             onChange={(e) => setNewBook({ ...newBook, description: e.target.value })}
             required
           />
           <input
             type="text"
             placeholder="Link"
-            value={newBook.link}
+            value={newBook.link || ''}
             onChange={(e) => setNewBook({ ...newBook, link: e.target.value })}
           />
+
           <button type="submit">{editingBook ? 'Update Book' : 'Add Book'}</button>
         </form>
       </div>
@@ -201,7 +283,7 @@ const MyLibrary = () => {
               </div>
              
               <button className="edit-btn" onClick={() => handleEditBook(book)}>Edit</button>
-              <button className="delete-btn" onClick={() => handleDeleteBook(book.bookId)}>Delete</button>
+              <button className="delete-btn" onClick={() => deleteBook(book.bookId)}>Delete</button>
             </div>
           ))
         ) : (
