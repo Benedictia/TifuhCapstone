@@ -20,7 +20,7 @@ const MyLibrary = () => {
     }
 
     // Fetch user library on mount
-    fetch('https://backendbookapp-3xvz.onrender.com/api/auth/user', {
+    fetch('https://backendbookapp-8eur.onrender.com/api/auth/user', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -40,7 +40,7 @@ const MyLibrary = () => {
     }
 
     const newBookWithId = { ...newBook, bookId: Date.now(), status: 'yetToStart' };
-    fetch('https://backendbookapp-3xvz.onrender.com/api/auth/library', {
+    fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const MyLibrary = () => {
     }
 
     try {
-      const response = await fetch('https://backendbookapp-3xvz.onrender.com/api/auth/library/status', {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/library/status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const MyLibrary = () => {
       return;
     }
 
-    fetch('https://backendbookapp-3xvz.onrender.com/api/auth/library', {
+    fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -16,7 +16,7 @@ const ProfilePage = () => {
     // Fetch user profile and library from API
     const fetchProfile = async () => {
       try {
-        const response = await fetch('https://backendbookapp-3xvz.onrender.com/api/auth/user', {
+        const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/user', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
