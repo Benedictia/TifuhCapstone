@@ -23,7 +23,7 @@ const BookSearchPage = () => {
     setQueryParams(''); 
   };
 
-  // Handle query change (search text input)
+  // Handle search text input
   const handleQueryChange = (e) => {
     setQueryParams(e.target.value);
   };

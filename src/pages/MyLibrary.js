@@ -32,7 +32,7 @@ const MyLibrary = () => {
 
   // Add book to library
   const handleAddBook = (e) => {
-    e.preventDefault(); // Prevent form submission from reloading the page
+    e.preventDefault(); 
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
@@ -108,7 +108,7 @@ const MyLibrary = () => {
       .catch((error) => console.error('Error deleting book:', error));
   };
 
-  // Handle editing book (you may want to implement editing logic here)
+  
   const handleEditBook = (book) => {
     setEditingBook(book);
     setNewBook({
@@ -126,7 +126,7 @@ const MyLibrary = () => {
       <div>
         <h3>{editingBook ? 'Edit Book' : 'Add New Book'}</h3>
         
-        {/* The form for adding/editing books */}
+        
         <form onSubmit={handleAddBook}>
           <input
             type="text"

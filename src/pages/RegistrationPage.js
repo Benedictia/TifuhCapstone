@@ -19,7 +19,7 @@ const RegisterPage = () => {
     }
 
     try {
-      // Make POST request to the correct API endpoint
+      // Make POST request 
       const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

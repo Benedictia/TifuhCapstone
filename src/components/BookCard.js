@@ -8,7 +8,7 @@ const BookCard = ({ book, onAddToLibrary }) => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // Extract the book description
+  // Get the book description
   const description = book.volumeInfo.description || 'No description available.';
   const briefDescription = description.length > 100 ? description.substring(0, 100) + '...' : description;
 

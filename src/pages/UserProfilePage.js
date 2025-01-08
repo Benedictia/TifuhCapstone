@@ -13,7 +13,6 @@ const ProfilePage = () => {
       navigate('/login');
     }
 
-    // Fetch user profile and library from API
     const fetchProfile = async () => {
       try {
         const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/user', {
@@ -27,7 +26,7 @@ const ProfilePage = () => {
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
-          setUserLibrary(data.library); // Set the library when profile is fetched
+          setUserLibrary(data.library)
         } else {
           alert('Failed to fetch profile');
         }
@@ -37,7 +36,7 @@ const ProfilePage = () => {
     };
 
     fetchProfile();
-  }, [navigate]); // The useEffect will run whenever the page loads, checking the authentication token
+  }, [navigate]); 
 
   return (
     <div>

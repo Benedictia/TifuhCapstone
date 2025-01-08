@@ -6,7 +6,7 @@ const LoginPage = ({ onAuthenticate }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Check if the user is already logged in when the component mounts
+  // Check if the user is already logged in 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
