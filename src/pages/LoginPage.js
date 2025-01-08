@@ -18,7 +18,7 @@ const LoginPage = ({ onAuthenticate }) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://backendbookapp-yqmj.onrender.com/api/auth/login', {
+      const response = await fetch('https://backendbookapp-3xvz.onrender.com.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
