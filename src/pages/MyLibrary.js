@@ -38,20 +38,23 @@ const MyLibrary = () => {
 
   // Add book to library
   const addBook = async (e) => {
-    e.preventDefault(); 
-
+    e.preventDefault();
+  
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
     }
-
+  
+    // Generate a unique bookId by combining Date.now() with a random number
+    const bookId = Date.now() + Math.random().toString(36).substring(2);  
+  
     const book = {
       ...newBook,
-      bookId: Date.now(), 
-      status: 'yetToStart', 
+      bookId: bookId,  // Use the generated unique bookId
+      status: 'yetToStart',
     };
-
+  
     try {
       const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
         method: 'PUT',
@@ -61,25 +64,26 @@ const MyLibrary = () => {
         },
         body: JSON.stringify(book),
       });
-
+  
       if (!response.ok) throw new Error('Failed to add book');
-
+  
       const data = await response.json();
       console.log('Library Updated:', data);
-      setUserLibrary(data); 
+      setUserLibrary(data);
       setNewBook({
         title: '',
         author: '',
         genre: '',
         description: '',
         link: '',
-        status: 'yetToStart', 
-      }); // Reset form
+        status: 'yetToStart',
+      });
     } catch (error) {
       console.error('Error adding book:', error);
-      setError(error.message); 
+      setError(error.message);
     }
   };
+  
 
   // Update book status
   const handleStatusChange = async (bookId, status) => {
@@ -159,13 +163,13 @@ const MyLibrary = () => {
       navigate('/login');
       return;
     }
-
+  
     const updatedBook = {
       ...newBook,
       bookId: editingBook.bookId, 
-      status: editingBook.status || 'yetToStart', 
+      status: editingBook.status || 'yetToStart',
     };
-
+  
     try {
       const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/library', {
         method: 'PUT',
@@ -175,33 +179,38 @@ const MyLibrary = () => {
         },
         body: JSON.stringify(updatedBook),
       });
-
+  
       if (!response.ok) {
-        const errorMessage = await response.text(); 
+        const errorMessage = await response.text();
         console.error('Failed to update book. Server response:', errorMessage);
         throw new Error(`Failed to update book: ${response.statusText}`);
       }
-
+  
       const updatedLibrary = await response.json();
       console.log('Library Updated:', updatedLibrary);
-
-      // Update the UI with the updated library data
-      setUserLibrary(updatedLibrary);
+  
+      // Update the UI with the updated book directly
+      setUserLibrary((prevLibrary) => 
+        prevLibrary.map((book) =>
+          book.bookId === updatedBook.bookId ? updatedBook : book
+        )
+      );
+  
       setNewBook({
         title: '',
         author: '',
         genre: '',
         description: '',
         link: '',
-        status: 'yetToStart', 
+        status: 'yetToStart',
       });
       setEditingBook(null);
     } catch (error) {
       console.error('Error updating book:', error);
-      setError(error.message); 
+      setError(error.message);
     }
   };
-
+  
   return (
     <div>
       <h2>My Book Collection</h2>

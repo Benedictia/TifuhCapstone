@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +10,8 @@ const LoginPage = ({ onAuthenticate }) => {
   const [password, setPassword] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Check if the user is already logged in 
   useEffect(() => {
@@ -18,6 +21,7 @@ const LoginPage = ({ onAuthenticate }) => {
     }
   }, [navigate]);
 
+  // Login function
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -51,24 +55,28 @@ const LoginPage = ({ onAuthenticate }) => {
     }
   };
 
+  // Request Password Reset function
   const handleResetPassword = async (e) => {
     e.preventDefault();
-
+    
     try {
-      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/reset-password', {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/request-password-reset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: resetEmail }),
+        body: JSON.stringify({
+          email: resetEmail, // Send the email for password reset request
+        }),
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         alert('If the email is registered, a password reset link has been sent.');
-        setShowModal(false);  
+        setShowModal(false); // Close the modal after sending the request
       } else {
-        const errorData = await response.json();
-        alert(errorData.msg || 'An error occurred. Please try again later.');
+        alert(data.msg || 'An error occurred. Please try again later.');
       }
     } catch (error) {
       console.error('Password reset error:', error);
@@ -76,6 +84,46 @@ const LoginPage = ({ onAuthenticate }) => {
     }
   };
 
+  // Submit the new password after token validation
+  const handlePasswordResetSubmit = async (e) => {
+    e.preventDefault();
+
+    if (resetPassword !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    const token = new URLSearchParams(window.location.search).get('token'); 
+    const newPassword = resetPassword; 
+  
+    try {
+      const response = await fetch('https://backendbookapp-8eur.onrender.com/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: token, 
+          newPassword: newPassword, 
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        alert('Your password has been reset successfully.');
+        // Reset password fields after successful reset
+        setResetPassword('');
+        setConfirmPassword('');
+      } else {
+        alert(data.msg || 'An error occurred. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      alert('An error occurred. Please try again later.');
+    }
+  };
+  
   return (
     <div className="login-container" style={{ padding: '3rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div className="login-form" style={{ width: '100%', maxWidth: '400px' }}>

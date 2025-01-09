@@ -24,7 +24,7 @@ const HomePage = () => {
 
   return (
     <div>
-      <h1>Absizy Book Discovery!</h1>
+      <h1>Absizy Book Discovery and Library Management System</h1>
 
       {alertMessage && (
         <div style={{ color: alertType === 'error' ? 'red' : 'green' }}>

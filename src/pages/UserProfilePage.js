@@ -5,8 +5,8 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [userLibrary, setUserLibrary] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);  
 
-  // Fetch user profile and library data when the component mounts or when the library changes
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -26,22 +26,30 @@ const ProfilePage = () => {
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
-          setUserLibrary(data.library)
+          setUserLibrary(data.library);
+        } else if (response.status === 403) {
+          // Token expired, log out the user
+          localStorage.removeItem('token');
+          navigate('/login');
         } else {
           alert('Failed to fetch profile');
         }
+        setIsLoading(false); 
       } catch (error) {
         console.error('Error fetching profile:', error);
+        setIsLoading(false); 
       }
     };
 
     fetchProfile();
-  }, [navigate]); 
+  }, [navigate]);
 
   return (
     <div>
       <h2>User Profile</h2>
-      {profile ? (
+      {isLoading ? (
+        <p>Loading your profile...</p>
+      ) : profile ? (
         <div>
           <p>Welcome, {profile.name}!</p>
 
@@ -61,7 +69,7 @@ const ProfilePage = () => {
           )}
         </div>
       ) : (
-        <p>Loading profile...</p>
+        <p>Failed to load profile.</p>  
       )}
     </div>
   );
